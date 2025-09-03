@@ -1,0 +1,435 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Supervisión Reservorios - Jaén</title>
+
+<!-- Bootstrap 5 -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- SheetJS (XLSX) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<style>
+  body{background:#f6f9fb;color:#0b2533}
+  header{background:#0ea5e9;color:white;padding:14px 0;margin-bottom:14px}
+  h1{font-size:1.15rem;margin:0}
+  .card{box-shadow:0 2px 6px rgba(15,23,42,0.06)}
+  table thead th{background:#e6f6fb}
+  .note{font-size:.88rem;color:#475569}
+  .nowrap{white-space:nowrap}
+  @media print{ .no-print{display:none!important} }
+</style>
+</head>
+<body>
+
+<header class="text-center mb-3">
+  <div class="container">
+    <h1>Instrumento Integrado — Supervisión de Reservorios (Jaén)</h1>
+    <div class="text-white-50 small">Ficha técnica • Evaluación • Partidas detalladas • Avances por distrito • Export/Guardar</div>
+  </div>
+</header>
+
+<main class="container mb-5">
+
+  <!-- Parte A: Ficha técnica -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5 class="card-title">Parte A — Ficha Técnica</h5>
+      <div class="row g-2">
+        <div class="col-md-4"><label class="form-label">Código / ID</label><input id="f_codigo" class="form-control"></div>
+        <div class="col-md-8"><label class="form-label">Nombre del reservorio</label><input id="f_nombre" class="form-control"></div>
+
+        <div class="col-md-6"><label class="form-label">Distrito – Centro poblado</label><input id="f_distrito_cp" class="form-control"></div>
+        <div class="col-md-3"><label class="form-label">Tipo de reservorio</label>
+          <select id="f_tipo" class="form-select">
+            <option value="">-- Seleccione --</option>
+            <option>R1</option><option>R2</option><option>R3</option><option>R4</option><option>R5</option>
+            <option>R6</option><option>R7</option><option>R8</option><option>R9</option><option>R10</option>
+          </select>
+        </div>
+
+        <div class="col-md-3"><label class="form-label">Fecha supervisión</label><input id="f_fecha" type="date" class="form-control"></div>
+
+        <div class="col-md-2"><label class="form-label">UTM - Zona</label><input id="f_zona" class="form-control"></div>
+        <div class="col-md-5"><label class="form-label">UTM - Este (m)</label><input id="f_este" type="number" class="form-control"></div>
+        <div class="col-md-5"><label class="form-label">UTM - Norte (m)</label><input id="f_norte" type="number" class="form-control"></div>
+
+        <div class="col-md-5"><label class="form-label">Beneficiario (nombre)</label><input id="f_beneficiario" class="form-control"></div>
+        <div class="col-md-3"><label class="form-label">DNI</label><input id="f_dni" class="form-control"></div>
+        <div class="col-md-4"><label class="form-label">Celular</label><input id="f_cel" class="form-control"></div>
+
+        <div class="col-md-4"><label class="form-label">Capacidad diseño (m³)</label><input id="f_capdis" type="number" class="form-control"></div>
+        <div class="col-md-4"><label class="form-label">Capacidad actual (m³)</label><input id="f_capact" type="number" class="form-control"></div>
+        <div class="col-md-4"><label class="form-label">Fuente de abastecimiento</label><input id="f_fuente" class="form-control"></div>
+
+        <div class="col-md-4"><label class="form-label">Uso principal</label><input id="f_uso" class="form-control"></div>
+        <div class="col-md-4"><label class="form-label">Supervisor responsable</label><input id="f_supervisor" class="form-control"></div>
+        <div class="col-md-4"><label class="form-label">Técnico responsable (nombre)</label><input id="f_tecnicoresp" class="form-control"></div>
+        <div class="col-md-4"><label class="form-label">Distrito del técnico</label><input id="f_tecdistrito" class="form-control"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Parte B1: Evaluación estructural -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5 class="card-title">Parte B1 — Evaluación estructural y operativa</h5>
+      <div class="note mb-2">Marcar ✓ si cumple y escribir observación</div>
+      <div class="table-responsive">
+        <table class="table table-sm align-middle">
+          <thead><tr><th>Ítem</th><th class="text-center">Cumple</th><th>Observaciones</th></tr></thead>
+          <tbody id="checklistBody">
+            <tr><td>Taludes sin erosión o grietas</td><td class="text-center"><input type="checkbox" data-key="taludes"></td><td><input class="form-control form-control-sm" data-key="taludes_obs"></td></tr>
+            <tr><td>Borde libre ≥ 0.30 m</td><td class="text-center"><input type="checkbox" data-key="borde"></td><td><input class="form-control form-control-sm" data-key="borde_obs"></td></tr>
+            <tr><td>Revestimiento en buen estado</td><td class="text-center"><input type="checkbox" data-key="revest"></td><td><input class="form-control form-control-sm" data-key="revest_obs"></td></tr>
+            <tr><td>Ausencia de filtraciones</td><td class="text-center"><input type="checkbox" data-key="filtr"></td><td><input class="form-control form-control-sm" data-key="filtr_obs"></td></tr>
+            <tr><td>Compuerta de ingreso y salida operativa</td><td class="text-center"><input type="checkbox" data-key="compuertas"></td><td><input class="form-control form-control-sm" data-key="compuertas_obs"></td></tr>
+            <tr><td>Canales de ingreso y salida libres</td><td class="text-center"><input type="checkbox" data-key="canales"></td><td><input class="form-control form-control-sm" data-key="canales_obs"></td></tr>
+            <tr><td>Sistema de distribución sin pérdidas</td><td class="text-center"><input type="checkbox" data-key="sisdist"></td><td><input class="form-control form-control-sm" data-key="sisdist_obs"></td></tr>
+            <tr><td>Señalización de seguridad</td><td class="text-center"><input type="checkbox" data-key="senal"></td><td><input class="form-control form-control-sm" data-key="senal_obs"></td></tr>
+            <tr><td>Perímetro cercado</td><td class="text-center"><input type="checkbox" data-key="perim"></td><td><input class="form-control form-control-sm" data-key="perim_obs"></td></tr>
+            <tr><td>Área libre de basura</td><td class="text-center"><input type="checkbox" data-key="limp"></td><td><input class="form-control form-control-sm" data-key="limp_obs"></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Parte B2: Avance de partidas (detallado) -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5 class="card-title">Parte B2 — Avance de partidas / actividades (detallado)</h5>
+      <div class="note mb-2">Ingrese porcentajes (%) por fase. R1–R7 y R8–R10 — se permiten valores intermedios.</div>
+      <div class="table-responsive">
+        <table class="table table-sm table-bordered align-middle" id="tablaPartidas">
+          <thead>
+            <tr>
+              <th rowspan="2" class="align-middle">Actividad</th>
+              <th colspan="3" class="text-center">CORTE MANUAL ... R1–R7</th>
+              <th colspan="3" class="text-center">CORTE MANUAL ... R8–R10</th>
+              <th rowspan="2" class="align-middle">Observaciones</th>
+              <th rowspan="2" class="align-middle">Evidencia (Foto/GPS)</th>
+            </tr>
+            <tr>
+              <th class="text-center">Inicio (20%)</th>
+              <th class="text-center">Bloque (80%)</th>
+              <th class="text-center">Terminado (100%)</th>
+              <th class="text-center">Inicio (20%)</th>
+              <th class="text-center">Bloque (80%)</th>
+              <th class="text-center">Terminado (100%)</th>
+            </tr>
+          </thead>
+          <tbody id="partidasBody" class="small"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Parte C: Avances por distrito -->
+  <div class="card mb-3">
+    <div class="card-body">
+      <h5 class="card-title">Parte C — Avances por distrito (editable)</h5>
+      <div class="note mb-2">Edita Planificados, Avance (%) y Observaciones según inspección.</div>
+      <div class="table-responsive">
+        <table class="table table-sm table-bordered" id="tablaDistritos">
+          <thead><tr><th>Distrito</th><th>Reservorios</th><th>Meta por técnico</th><th>Técnico responsable</th><th>Planificados</th><th>Avance (%)</th><th>Observaciones</th></tr></thead>
+          <tbody id="distritosBody" class="small"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Parte D: botones -->
+  <div class="card mb-5">
+    <div class="card-body">
+      <h5 class="card-title">Parte D — Guardar / Cargar / Exportar / Imprimir</h5>
+      <div class="d-flex flex-wrap gap-2 no-print">
+        <button id="btnGuardar" class="btn btn-primary">Guardar local</button>
+        <button id="btnCargar" class="btn btn-outline-secondary">Cargar local</button>
+        <button id="btnExport" class="btn btn-success">Exportar a Excel (una hoja)</button>
+        <button id="btnImprimir" class="btn btn-info" onclick="window.print()">Imprimir</button>
+        <button id="btnLimpiar" class="btn btn-danger">Limpiar</button>
+      </div>
+      <p class="note mt-2 mb-0">Advertencia: el guardado local usa el navegador (localStorage). Para trabajo offline estable, abra la página desde servidor local y registre el service-worker.js (incluido).</p>
+    </div>
+  </div>
+
+</main>
+
+<!-- Bootstrap and scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+/* ============= Datos iniciales (distritos + técnicos / metas) ============= */
+const distritosIniciales = [
+  { distrito:"BELLAVISTA", reservorios:165, meta:82.5, tecnico:"JUAN EVERLI MARIN PASTOR; DAVID BARBOZA HUAMÁN" },
+  { distrito:"JAEN", reservorios:164, meta:82, tecnico:"ERIK JOHAN HARO LIZARRAGA; WILDER ANDY PECHE COLLANTES" },
+  { distrito:"SALLIQUE", reservorios:264, meta:88, tecnico:"UBALDO MUÑOZ HUAMAN; KLEISON ALDEIR MELENDRES LOZADA; NACOR CENTURION TORO" },
+  { distrito:"CHONTALI", reservorios:104, meta:104, tecnico:"LUIS HUMBERTO BAZAN ESPINOLA" },
+  { distrito:"COLASAY", reservorios:97, meta:97, tecnico:"HELON ITOMAR LOPEZ MURGA" },
+  { distrito:"LAS PIRIAS", reservorios:122, meta:122, tecnico:"INGRID KENYA HURTADO CALDERON" },
+  { distrito:"HUABAL", reservorios:127, meta:127, tecnico:"LEONCIO ACEVEDO ASUNCION" },
+  { distrito:"POMAHUACA", reservorios:102, meta:102, tecnico:"ESMILVER LORENZO ROSAS VARGAS" },
+  { distrito:"PUCARA", reservorios:51, meta:51, tecnico:"BRUNO TINEO NOE" },
+  { distrito:"SAN FELIPE", reservorios:183, meta:91.5, tecnico:"MIGUEL ANTONIO MONCADA ALVITES; CLISMAN YATAS CAMPOS" },
+  { distrito:"SANTA ROSA", reservorios:108, meta:108, tecnico:"ENER OCTAVIO TAFUR CABRERA" },
+  { distrito:"SAN JOSE DEL ALTO", reservorios:101, meta:101, tecnico:"JAVIEL AMARO CHASQUERO OCAÑA" }
+];
+
+const partidas = [
+  "ACARREO DE MATERIAL SUELTO PARA CONFORMACIÓN DE DIQUE",
+  "EXCAVACIÓN DE ZANJAS DE ADUCCIÓN Y ALIVIADERO",
+  "EXCAVACIÓN DE ZANJAS DE ANCLAJE",
+  "REFINE Y NIVELACIÓN EN TERRENO EXCAVADO",
+  "CONTROL TOPOGRÁFICO EN ESTRUCTURAS MAYORES A 100m3",
+  "RELLENO COMPACTADO CON MATERIAL PROPIO",
+  "SUMINISTRO Y COLOCACIÓN DE GEOMEMBRANA HDPE 1.5mm GRI-GM13 (ANCHO ROLLO 7m)",
+  "SOLDADURA POR TERMOFUSIÓN DE PANELES DE GEOMEMBRANA",
+  "HERMETIZADO Y SOLDADURA POR EXTRUSIÓN",
+  "INSTALACIÓN DE PASAMUROS PVC",
+  "SUMINISTRO E INSTALACIÓN DE TUBERÍAS PVC S/P-C-10",
+  "COLOCACIÓN Y SUMINISTRO DE VÁLVULAS PVC",
+  "SUMINISTRO Y COLOCACIÓN DE CAJAS DE POLIPROPILENO PARA VÁLVULAS",
+  "CERCO PERIMÉTRICO CON ALAMBRE DE PÚAS Y POSTES DE MADERA"
+];
+
+/* ====== RENDER TABLA PARTIDAS ====== */
+function renderPartidas(){
+  const tbody = document.getElementById("partidasBody");
+  tbody.innerHTML = "";
+  partidas.forEach((p, idx) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td class="text-start">${p}</td>
+      <td><input type="number" min="0" max="100" class="form-control form-control-sm" data-key="p_${idx}_r1_20" placeholder="%"></td>
+      <td><input type="number" min="0" max="100" class="form-control form-control-sm" data-key="p_${idx}_r1_80" placeholder="%"></td>
+      <td><input type="number" min="0" max="100" class="form-control form-control-sm" data-key="p_${idx}_r1_100" placeholder="%"></td>
+      <td><input type="number" min="0" max="100" class="form-control form-control-sm" data-key="p_${idx}_r8_20" placeholder="%"></td>
+      <td><input type="number" min="0" max="100" class="form-control form-control-sm" data-key="p_${idx}_r8_80" placeholder="%"></td>
+      <td><input type="number" min="0" max="100" class="form-control form-control-sm" data-key="p_${idx}_r8_100" placeholder="%"></td>
+      <td><input type="text" class="form-control form-control-sm" data-key="p_${idx}_obs" placeholder="Observaciones"></td>
+      <td><input type="text" class="form-control form-control-sm" data-key="p_${idx}_evi" placeholder="Foto/GPS"></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+/* ====== RENDER TABLA DISTRITOS ====== */
+function renderDistritos(){
+  const tbody = document.getElementById("distritosBody");
+  tbody.innerHTML = "";
+  distritosIniciales.forEach((d, i)=>{
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${d.distrito}</td>
+      <td>${d.reservorios}</td>
+      <td><input class="form-control form-control-sm" data-key="dist_meta_${i}" value="${d.meta}"></td>
+      <td><input class="form-control form-control-sm" data-key="dist_tec_${i}" value="${d.tecnico}"></td>
+      <td><input class="form-control form-control-sm" data-key="dist_plan_${i}" value="${Math.round(d.meta)}" type="number"></td>
+      <td><input class="form-control form-control-sm" data-key="dist_avance_${i}" value="" type="number" min="0" max="100"></td>
+      <td><input class="form-control form-control-sm" data-key="dist_obs_${i}" value=""></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+/* ============== GUARDAR / CARGAR ============== */
+const STORAGE_KEY = "supervision_jaen_v2";
+function guardarLocal(){
+  const data = {};
+  // ficha
+  data.ficha = {};
+  ["f_codigo","f_nombre","f_distrito_cp","f_tipo","f_fecha","f_zona","f_este","f_norte","f_beneficiario","f_dni","f_cel","f_capdis","f_capact","f_fuente","f_uso","f_supervisor","f_tecnicoresp","f_tecdistrito"].forEach(id=>{
+    data.ficha[id] = document.getElementById(id)?.value || "";
+  });
+  // chequeo
+  data.chequeo = {};
+  document.querySelectorAll("#checklistBody tr").forEach((tr, i)=>{
+    const chk = tr.querySelector('input[type="checkbox"]');
+    const txt = tr.querySelector('input[type="text"]');
+    data.chequeo[i] = { cumple: !!chk.checked, obs: txt?.value || "" };
+  });
+  // partidas
+  data.partidas = {};
+  partidas.forEach((p, idx)=>{
+    const row = {};
+    ["r1_20","r1_80","r1_100","r8_20","r8_80","r8_100"].forEach(k=>{
+      row[k] = document.querySelector(`[data-key="p_${idx}_${k}"]`)?.value || "";
+    });
+    row.obs = document.querySelector(`[data-key="p_${idx}_obs"]`)?.value || "";
+    row.evi = document.querySelector(`[data-key="p_${idx}_evi"]`)?.value || "";
+    data.partidas[idx] = row;
+  });
+  // distritos
+  data.distritos = [];
+  distritosIniciales.forEach((d,i)=>{
+    data.distritos.push({
+      distrito: d.distrito,
+      reservorios: d.reservorios,
+      meta_por_tecnico: document.querySelector(`[data-key="dist_meta_${i}"]`)?.value || "",
+      tecnico_responsable: document.querySelector(`[data-key="dist_tec_${i}"]`)?.value || "",
+      planificados: document.querySelector(`[data-key="dist_plan_${i}"]`)?.value || "",
+      avance: document.querySelector(`[data-key="dist_avance_${i}"]`)?.value || "",
+      observaciones: document.querySelector(`[data-key="dist_obs_${i}"]`)?.value || ""
+    });
+  });
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  alert("Datos guardados localmente ✔");
+}
+
+function cargarLocal(){
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(!raw){ alert("No hay datos guardados."); return; }
+  const data = JSON.parse(raw);
+  // ficha
+  Object.keys(data.ficha || {}).forEach(k=>{
+    const el = document.getElementById(k);
+    if(el) el.value = data.ficha[k];
+  });
+  // chequeo
+  (data.chequeo || []).forEach((entry,i)=>{
+    const tr = document.querySelectorAll("#checklistBody tr")[i];
+    if(!tr) return;
+    tr.querySelector('input[type="checkbox"]').checked = !!entry.cumple;
+    tr.querySelector('input[type="text"]').value = entry.obs || "";
+  });
+  // partidas
+  (data.partidas || []).forEach((row, idx)=>{
+    if(!row) return;
+    ["r1_20","r1_80","r1_100","r8_20","r8_80","r8_100"].forEach(k=>{
+      const el = document.querySelector(`[data-key="p_${idx}_${k}"]`);
+      if(el) el.value = row[k] || "";
+    });
+    const eobs = document.querySelector(`[data-key="p_${idx}_obs"]`);
+    if(eobs) eobs.value = row.obs || "";
+    const evi = document.querySelector(`[data-key="p_${idx}_evi"]`);
+    if(evi) evi.value = row.evi || "";
+  });
+  // distritos
+  (data.distritos || []).forEach((d,i)=>{
+    const keys = ["meta","tec","plan","avance","obs"];
+    const selectors = [
+      `[data-key="dist_meta_${i}"]`,
+      `[data-key="dist_tec_${i}"]`,
+      `[data-key="dist_plan_${i}"]`,
+      `[data-key="dist_avance_${i}"]`,
+      `[data-key="dist_obs_${i}"]`
+    ];
+    if(d){
+      document.querySelector(selectors[0]) && (document.querySelector(selectors[0]).value = d.meta_por_tecnico || "");
+      document.querySelector(selectors[1]) && (document.querySelector(selectors[1]).value = d.tecnico_responsable || "");
+      document.querySelector(selectors[2]) && (document.querySelector(selectors[2]).value = d.planificados || "");
+      document.querySelector(selectors[3]) && (document.querySelector(selectors[3]).value = d.avance || "");
+      document.querySelector(selectors[4]) && (document.querySelector(selectors[4]).value = d.observaciones || "");
+    }
+  });
+
+  alert("Datos cargados ✔");
+}
+
+/* ============== EXPORTAR A EXCEL (UNA SOLA HOJA) ============== */
+function exportarExcel(){
+  const rows = [];
+
+  // Encabezado general
+  rows.push(["INSTRUMENTO INTEGRADO - SUPERVISIÓN RESERVORIOS (Jaén)"]);
+  rows.push([]);
+
+  // Ficha técnica (key, value)
+  rows.push(["FICHA TÉCNICA"]);
+  const fichaOrder = [
+    ["Código / ID","f_codigo"],["Nombre","f_nombre"],["Distrito / CP","f_distrito_cp"],
+    ["Tipo","f_tipo"],["Fecha","f_fecha"],["UTM Zona","f_zona"],["UTM Este","f_este"],["UTM Norte","f_norte"],
+    ["Beneficiario","f_beneficiario"],["DNI","f_dni"],["Celular","f_cel"],
+    ["Capacidad diseño (m3)","f_capdis"],["Capacidad actual (m3)","f_capact"],
+    ["Fuente abastecimiento","f_fuente"],["Uso principal","f_uso"],
+    ["Supervisor responsable","f_supervisor"],["Técnico responsable","f_tecnicoresp"],["Distrito del técnico","f_tecdistrito"]
+  ];
+  fichaOrder.forEach(it => rows.push([it[0], (document.getElementById(it[1])?.value || "")]));
+  rows.push([]);
+
+  // Evaluación estructural
+  rows.push(["EVALUACIÓN ESTRUCTURAL / OPERATIVA"]);
+  rows.push(["Ítem","Cumple","Observaciones"]);
+  document.querySelectorAll("#checklistBody tr").forEach(tr=>{
+    const item = tr.cells[0].innerText.trim();
+    const cumple = tr.querySelector('input[type="checkbox"]').checked ? "Sí" : "No";
+    const obs = tr.querySelector('input[type="text"]').value || "";
+    rows.push([item, cumple, obs]);
+  });
+  rows.push([]);
+
+  // Partidas (con encabezado agrupado simulado)
+  rows.push(["AVANCE DE PARTIDAS / ACTIVIDADES"]);
+  // Header row descriptive
+  rows.push([
+    "Actividad",
+    "R1-R7 Inicio (%)","R1-R7 Bloque (%)","R1-R7 Terminado (%)",
+    "R8-R10 Inicio (%)","R8-R10 Bloque (%)","R8-R10 Terminado (%)",
+    "Observaciones","Evidencia"
+  ]);
+  document.querySelectorAll("#tablaPartidas tbody tr").forEach(tr=>{
+    const tds = tr.querySelectorAll("td");
+    const row = [
+      tds[0].innerText,
+      tds[1].querySelector("input").value || "",
+      tds[2].querySelector("input").value || "",
+      tds[3].querySelector("input").value || "",
+      tds[4].querySelector("input").value || "",
+      tds[5].querySelector("input").value || "",
+      tds[6].querySelector("input").value || "",
+      tds[7].querySelector("input").value || "",
+      tds[8].querySelector("input").value || ""
+    ];
+    rows.push(row);
+  });
+  rows.push([]);
+
+  // Avances por distrito
+  rows.push(["AVANCES POR DISTRITO"]);
+  rows.push(["Distrito","Reservorios","Meta por técnico","Técnico responsable","Planificados","Avance (%)","Observaciones"]);
+  distritosIniciales.forEach((d,i)=>{
+    const meta = document.querySelector(`[data-key="dist_meta_${i}"]`)?.value || d.meta;
+    const tec  = document.querySelector(`[data-key="dist_tec_${i}"]`)?.value || d.tecnico;
+    const plan = document.querySelector(`[data-key="dist_plan_${i}"]`)?.value || "";
+    const avance= document.querySelector(`[data-key="dist_avance_${i}"]`)?.value || "";
+    const obs  = document.querySelector(`[data-key="dist_obs_${i}"]`)?.value || "";
+    rows.push([d.distrito, d.reservorios, meta, tec, plan, avance, obs]);
+  });
+
+  // Generate worksheet and workbook (single sheet)
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+
+  // Optional: set column widths
+  ws['!cols'] = [{wpx:300},{wpx:90},{wpx:90},{wpx:150},{wpx:90},{wpx:90},{wpx:90},{wpx:200},{wpx:140}];
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Supervision_Jaen");
+  XLSX.writeFile(wb, "Supervision_Reservorios_Jaen_Consolidado.xlsx");
+}
+
+/* ============== Inicialización de UI ============== */
+document.addEventListener("DOMContentLoaded", ()=>{
+  renderPartidas();
+  renderDistritos();
+
+  // botones
+  document.getElementById("btnGuardar").addEventListener("click", guardarLocal);
+  document.getElementById("btnCargar").addEventListener("click", cargarLocal);
+  document.getElementById("btnExport").addEventListener("click", exportarExcel);
+  document.getElementById("btnLimpiar").addEventListener("click", ()=>{ if(confirm("Limpiar formulario?")) location.reload(); });
+
+  // Registrar service worker (si existe)
+  if('serviceWorker' in navigator){
+    navigator.serviceWorker.register('service-worker.js').catch(()=>{ /* no fatal */ });
+  }
+});
+</script>
+</body>
+</html>
+
+
+
